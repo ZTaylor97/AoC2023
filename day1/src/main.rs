@@ -1,9 +1,8 @@
-use std::{cmp, fs};
+use std::fs;
 
 fn main() {
     let document = read_file("./input.txt");
     let lines = document.split_ascii_whitespace();
-
 
     let sum_part_one: i32 = lines.clone().map(|line| find_digits_1(line) as i32).sum();
     let sum_part_two: i32 = lines.map(|line| find_digits_2(line) as i32).sum();
@@ -33,7 +32,7 @@ fn find_digits_2(line: &str) -> u32 {
     let only_one = (digit_indices.len() + word_indices.len()) == 1;
 
     let digit_first = digit_indices.first();
-    let digit_last = digit_indices.last();              
+    let digit_last = digit_indices.last();
 
     let word_first = word_indices.iter().min_by(|x, y| x.0.cmp(&y.0));
     let word_last = word_indices.iter().max_by(|x, y| x.0.cmp(&y.0));
@@ -47,12 +46,12 @@ fn find_digits_2(line: &str) -> u32 {
                     digit_last.expect("Error"),
                     |x, y| x.0.cmp(&y.0),
                 )
-                .1
+                .1,
             )
         } else {
             (
                 digit_first.expect("Error: word_indices empty").1,
-                digit_last.expect("Error: word_indices empty").1
+                digit_last.expect("Error: word_indices empty").1,
             )
         }
     } else {
