@@ -2,14 +2,11 @@ use std::{cmp, fs};
 
 fn main() {
     let document = read_file("./input.txt");
-    let mut lines = document.split_ascii_whitespace();
+    let lines = document.split_ascii_whitespace();
 
-    let mut sum_part_one: u64 = 0;
-    let mut sum_part_two: u64 = 0;
-    for line in lines {
-        sum_part_one += find_digits_1(line);
-        sum_part_two += find_digits_2(line);
-    }
+
+    let sum_part_one: i32 = lines.clone().map(|line| find_digits_1(line) as i32).sum();
+    let sum_part_two: i32 = lines.map(|line| find_digits_2(line) as i32).sum();
 
     println!("Part 1 Answer: {sum_part_one}\nPart 2 Answer: {sum_part_two}")
 }
@@ -19,54 +16,57 @@ fn read_file(file_path: &str) -> String {
 }
 
 /// Part one: Extract first and last digits from line to create a number
-fn find_digits_1(line: &str) -> u64 {
+fn find_digits_1(line: &str) -> u32 {
     let digit_indices = find_digits_in_line(line);
 
-    u64::from(
+    u32::from(
         digit_indices.first().expect("Error: No digits found").1 * 10
             + digit_indices.last().expect("Error: No Digits found").1,
     )
 }
 
 /// Part two: Extract first and last digits, including words that spell numbers, to create a number
-fn find_digits_2(line: &str) -> u64 {
+fn find_digits_2(line: &str) -> u32 {
     let digit_indices = find_digits_in_line(line);
     let word_indices = find_numbers_as_words_in_line(line);
 
     let only_one = (digit_indices.len() + word_indices.len()) == 1;
 
-    let mut first_num: u32 = 0;
-    let mut last_num: u32 = 0;
-
     let digit_first = digit_indices.first();
-    let digit_last = digit_indices.last();
+    let digit_last = digit_indices.last();              
 
     let word_first = word_indices.iter().min_by(|x, y| x.0.cmp(&y.0));
     let word_last = word_indices.iter().max_by(|x, y| x.0.cmp(&y.0));
 
-    if let Some(digit_first_idx) = digit_first {
+    let (first_num, mut last_num) = if let Some(digit_first_idx) = digit_first {
         if let Some(word_first_idx) = word_first {
-            first_num = std::cmp::min_by(word_first_idx, digit_first_idx, |x, y| x.0.cmp(&y.0)).1;
-            last_num = std::cmp::max_by(
-                word_last.expect("Error"),
-                digit_last.expect("Error"),
-                |x, y| x.0.cmp(&y.0),
+            (
+                std::cmp::min_by(word_first_idx, digit_first_idx, |x, y| x.0.cmp(&y.0)).1,
+                std::cmp::max_by(
+                    word_last.expect("Error"),
+                    digit_last.expect("Error"),
+                    |x, y| x.0.cmp(&y.0),
+                )
+                .1
             )
-            .1;
         } else {
-            first_num = digit_first.expect("Error: word_indices empty").1;
-            last_num = digit_last.expect("Error: word_indices empty").1;
+            (
+                digit_first.expect("Error: word_indices empty").1,
+                digit_last.expect("Error: word_indices empty").1
+            )
         }
     } else {
-        first_num = word_first.expect("Error: word_indices empty").1;
-        last_num = word_last.expect("Error: word_indices empty").1;
-    }
+        (
+            word_first.expect("Error: word_indices empty").1,
+            word_last.expect("Error: word_indices empty").1,
+        )
+    };
 
     if only_one {
         last_num = first_num;
     }
 
-    u64::from(first_num * 10 + last_num)
+    u32::from(first_num * 10 + last_num)
 }
 
 fn find_digits_in_line(line: &str) -> Vec<(usize, u32)> {
