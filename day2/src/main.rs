@@ -4,54 +4,67 @@ fn main() {
     let document = read_file("./input.txt");
     let lines = document.split("\n");
 
+    part_one(lines.clone());
+    part_two(lines);
+}
+
+fn part_one(lines: std::str::Split<'_, &str>) {
+    let (red_max, green_max, blue_max) = (12, 13, 14);
+
+    let sum_score: u64 = lines
+        .enumerate()
+        .map(|(idx, line)| (idx, find_colour_max(line)))
+        .filter(|val| !(val.1 .0 > red_max || val.1 .1 > green_max || val.1 .2 > blue_max))
+        .map(|val| val.0 as u64)
+        .sum();
+
+    println!("Part 1: {sum_score}");
+}
+
+fn part_two(lines: std::str::Split<'_, &str>) {
+    let power_score:u64 = lines
+        .map(|line| {
+            let temp = find_colour_max(line);
+            (temp.0 * temp.1 * temp.2) as u64
+        })
+        .sum();
+
+    println!("Part 2: {power_score}");
+}
+
+fn find_colour_max(line: &str) -> (i32, i32, i32) {
+    let (mut red, mut green, mut blue) = (0, 0, 0);
     let colours = ["red", "green", "blue"];
 
-    let (red_max,green_max, blue_max) = (12,13,14);
+    let reveal_split = extract_reveals(line);
 
-    let mut sum_score:u64 = 0;
-    let mut power_score:u64 = 0;
+    let colour_strings: Vec<&str> = reveal_split
+        .iter()
+        .flat_map(|reveal| reveal.split(','))
+        .map(|col| col.trim())
+        .collect();
 
-    for (idx, mut line) in lines.enumerate() {
-        line = line.trim();
-
-        let game_split: Vec<&str> = line.split(':').collect();
-
-        let reveal_split: Vec<&str> = game_split[1].trim().split(";").collect();
-
-        let (mut red, mut green, mut blue) = (0, 0, 0);
-        
-
-        for reveal in reveal_split {
-            let colour_split: Vec<&str> = reveal.split(",").collect();
-
-            for colour_str in colour_split {
-                let num_split: Vec<&str> = colour_str.trim_start().split(' ').collect();
-                let num = num_split[0]
-                    .parse::<i32>()
-                    .expect("Error extracting number");
-
-                for colour in colours {
-                    if colour_str.contains(colour) {
-                        match colour {
-                            "red" => red = cmp::max(red, num),
-                            "green" => green = cmp::max(green, num),
-                            "blue" => blue = cmp::max(blue, num),
-                            _ => (),
-                        }
-                    }
+    for col in colour_strings {
+        for colour in colours {
+            let num = col.split(' ').collect::<Vec<_>>()[0]
+                .parse::<i32>()
+                .expect("Error extracting number");
+            if col.contains(colour) {
+                match colour {
+                    "red" => red = cmp::max(red, num),
+                    "green" => green = cmp::max(green, num),
+                    "blue" => blue = cmp::max(blue, num),
+                    _ => (),
                 }
             }
         }
-
-        if !(red > red_max || green > green_max || blue > blue_max) {
-            sum_score += idx as u64 + 1;
-        }
-        power_score += (red*green*blue) as u64;
-
-
     }
+    (red, green, blue)
+}
 
-    println!("Part 1: {sum_score}\nPart 2: {power_score}");
+fn extract_reveals(line: &str) -> Vec<&str> {
+    let game_split: Vec<&str> = line.split(':').collect();
+    game_split[1].trim().split(";").collect()
 }
 
 fn read_file(file_path: &str) -> String {
@@ -63,5 +76,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part_one() {}
+    fn max_values1() {
+        assert_eq!(find_colour_max("Game 1: 13 green, 3 red; 4 red, 9 green, 4 blue; 9 green, 10 red, 2 blue"), (10,13,4));
+    }
+    #[test]
+    fn max_values2() {
+        assert_eq!(find_colour_max("Game 43: 7 blue, 16 red, 1 green; 2 red, 6 green, 1 blue; 5 green, 3 red; 5 green, 9 blue, 2 red; 3 red, 9 blue, 4 green; 7 red, 9 blue"), (16,6,9));
+    }
 }
