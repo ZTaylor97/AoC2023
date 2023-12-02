@@ -36,13 +36,7 @@ fn find_colour_max(line: &str) -> (i32, i32, i32) {
     let (mut red, mut green, mut blue) = (0, 0, 0);
     let colours = ["red", "green", "blue"];
 
-    let reveal_split = extract_reveals(line);
-
-    let colour_strings: Vec<&str> = reveal_split
-        .iter()
-        .flat_map(|reveal| reveal.split(','))
-        .map(|col| col.trim())
-        .collect();
+    let colour_strings = extract_colour_number_pairs(line);
 
     for col in colour_strings {
         for colour in colours {
@@ -60,6 +54,17 @@ fn find_colour_max(line: &str) -> (i32, i32, i32) {
         }
     }
     (red, green, blue)
+}
+
+fn extract_colour_number_pairs(line: &str) -> Vec<&str> {
+    let reveal_split = extract_reveals(line);
+
+    let colour_strings: Vec<&str> = reveal_split
+        .iter()
+        .flat_map(|reveal| reveal.split(','))
+        .map(|col| col.trim())
+        .collect();
+    colour_strings
 }
 
 fn extract_reveals(line: &str) -> Vec<&str> {
