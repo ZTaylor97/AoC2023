@@ -2,27 +2,27 @@ use std::{cmp, fs};
 
 fn main() {
     let document = read_file("./input.txt");
-    let lines = document.split("\n");
+    let lines: Vec<&str> = document.split("\n").collect();
 
-    part_one(lines.clone());
-    part_two(lines);
+    part_one(&lines);
+    part_two(&lines);
 }
 
-fn part_one(lines: std::str::Split<'_, &str>) {
+fn part_one(lines: &Vec<&str>) {
     let (red_max, green_max, blue_max) = (12, 13, 14);
 
-    let sum_score: u64 = lines
+    let sum_score: u64 = lines.iter()
         .enumerate()
         .map(|(idx, line)| (idx, find_colour_max(line)))
-        .filter(|val| !(val.1 .0 > red_max || val.1 .1 > green_max || val.1 .2 > blue_max))
-        .map(|val| val.0 as u64)
+        .filter(|(_,(red,green,blue))| !(*red > red_max || *green > green_max || *blue > blue_max))
+        .map(|(idx,_)| idx as u64)
         .sum();
 
     println!("Part 1: {sum_score}");
 }
 
-fn part_two(lines: std::str::Split<'_, &str>) {
-    let power_score:u64 = lines
+fn part_two(lines: &Vec<&str>) {
+    let power_score:u64 = lines.iter()
         .map(|line| {
             let temp = find_colour_max(line);
             (temp.0 * temp.1 * temp.2) as u64
