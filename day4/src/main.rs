@@ -1,11 +1,12 @@
 use std::{collections::VecDeque, fs};
+use rayon::prelude::*;
 
 fn main() {
     let document = read_file("./input.txt");
     let lines: Vec<&str> = document.split("\r\n").collect();
 
     part_one(&lines);
-    part_two(&lines);
+    part_two_par(&lines);
 }
 
 fn part_one(lines: &Vec<&str>) {
@@ -25,10 +26,11 @@ fn part_one(lines: &Vec<&str>) {
 }
 
 fn part_two(lines: &Vec<&str>) {
-    let mut copies: VecDeque<usize> = VecDeque::new();
     let mut sum: u64 = 0;
-
+    
     for idx in 0..lines.len() {
+        
+    let mut copies: VecDeque<usize> = VecDeque::new();
         copies.push_back(idx);
 
         while copies.len() > 0 {
@@ -44,6 +46,32 @@ fn part_two(lines: &Vec<&str>) {
 
         println!("finished a loop");
     }
+
+    println!("Part two ans: {sum}");
+}
+
+fn part_two_par(lines: &Vec<&str>) {
+    let sum: u64 = (0..lines.len())
+        .into_par_iter()
+        .map(|idx| {
+            let mut copies: VecDeque<usize> = VecDeque::new();
+            copies.push_back(idx);
+
+            let mut inner_sum = 0;
+            while copies.len() > 0 {
+                inner_sum += 1;
+                let copy_idx = copies.pop_front().expect("Error, queue empty");
+
+                let win_count = get_win_count(lines[copy_idx]);
+
+                for win_idx in 1..=win_count {
+                    copies.push_back(copy_idx + win_idx as usize);
+                }
+            }
+
+            inner_sum
+        })
+        .sum();
 
     println!("Part two ans: {sum}");
 }
