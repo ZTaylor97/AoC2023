@@ -1,19 +1,51 @@
-use std::fs;
+use std::{collections::VecDeque, fs};
 
 fn main() {
     let document = read_file("./input.txt");
     let lines: Vec<&str> = document.split("\r\n").collect();
 
     part_one(&lines);
+    part_two(&lines);
 }
 
 fn part_one(lines: &Vec<&str>) {
     let sum = lines
         .iter()
-        .map(|line| get_game_score(line))
+        .map(|line| {
+            let count = get_win_count(line);
+            match count {
+                0 => 0,
+                1 => 1,
+                _ => u64::pow(2, count - 1),
+            }
+        })
         .fold(0, |acc, el| acc + el);
 
     println!("Part one ans: {sum}");
+}
+
+fn part_two(lines: &Vec<&str>) {
+    let mut copies: VecDeque<usize> = VecDeque::new();
+    let mut sum: u64 = 0;
+
+    for idx in 0..lines.len() {
+        copies.push_back(idx);
+
+        while copies.len() > 0 {
+            sum += 1;
+            let copy_idx = copies.pop_front().expect("Error, queue empty");
+
+            let win_count = get_win_count(lines[copy_idx]);
+
+            for win_idx in 1..=win_count {
+                copies.push_back(copy_idx + win_idx as usize);
+            }
+        }
+
+        println!("finished a loop");
+    }
+
+    println!("Part two ans: {sum}");
 }
 
 fn separate_numbers(line: &str) -> (Vec<u64>, Vec<u64>) {
@@ -35,7 +67,7 @@ fn separate_numbers(line: &str) -> (Vec<u64>, Vec<u64>) {
     (winners, numbers)
 }
 
-fn get_game_score(line: &str) -> u64 {
+fn get_win_count(line: &str) -> u32 {
     let (winners, numbers) = separate_numbers(line);
 
     let mut count = 0;
@@ -47,14 +79,8 @@ fn get_game_score(line: &str) -> u64 {
         }
     }
 
-    match count {
-        0 => 0,
-        1 => 1,
-        _ => u64::pow(2, count - 1)
-    }
+    count
 }
-
-fn part_two(lines: &Vec<&str>) {}
 
 fn read_file(file_path: &str) -> String {
     fs::read_to_string(file_path).expect("Error reading file")
