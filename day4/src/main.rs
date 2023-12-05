@@ -50,6 +50,7 @@ fn part_two(lines: &Vec<&str>) {
     println!("Part two ans: {sum}");
 }
 
+/// This approach makes program execution ~3 times as fast on my 6 core laptop
 fn part_two_par(lines: &Vec<&str>) {
     let sum: u64 = (0..lines.len())
         .into_par_iter()
